@@ -1,91 +1,64 @@
-# ------------------------------------------------------------------------------
-# Complete Example for AI Application Observability System
-#
-# This example demonstrates how to use the AI Application Observability System
-# module to deploy a complete AI application with ARMS monitoring.
-# ------------------------------------------------------------------------------
-
-# Configure Alibaba Cloud Provider
 provider "alicloud" {
-  region = "cn-zhangjiakou"
+  region = var.region
 }
 
-# Generate random suffix for unique resource naming
-resource "random_string" "suffix" {
-  length  = 8
-  lower   = true
-  upper   = false
-  numeric = false
-  special = false
+# Get available zones
+data "alicloud_zones" "available" {
+  available_instance_type = var.instance_type
 }
 
-# Query available zones for the specified instance type
-data "alicloud_zones" "default" {
-  available_disk_category     = "cloud_essd"
-  available_resource_creation = "VSwitch"
-  available_instance_type     = var.instance_type
-}
-
-# Query available Ubuntu images
-data "alicloud_images" "default" {
-  name_regex  = "^ubuntu_24_04_x64_20G_alibase_.*"
-  most_recent = true
-  owners      = "system"
-}
-
-# Deploy the AI Application Observability System module
-module "ai_observability_system" {
+# Call the module
+module "bailian_app" {
   source = "../../"
-
 
   vpc_config = {
     cidr_block = var.vpc_cidr_block
-    vpc_name   = var.vpc_name
+    vpc_name   = var.common_name_prefix
   }
 
   vswitch_config = {
     cidr_block   = var.vswitch_cidr_block
-    zone_id      = data.alicloud_zones.default.zones[0].id
-    vswitch_name = var.vswitch_name
+    zone_id      = data.alicloud_zones.available.zones[0].id
+    vswitch_name = "${var.common_name_prefix}-vswitch"
   }
 
   security_group_config = {
-    security_group_name = var.security_group_name
-    description         = var.security_group_description
+    security_group_name = "${var.common_name_prefix}-SecurityGroup"
   }
 
-  security_group_rule_config = {
-    type        = "ingress"
-    ip_protocol = "tcp"
-    nic_type    = "intranet"
-    policy      = "accept"
-    port_range  = "8000/8000"
-    priority    = 1
-    cidr_ip     = var.allow_public_access ? "0.0.0.0/0" : var.vswitch_cidr_block
-  }
+  security_group_rule_config = [
+    {
+      type        = "ingress"
+      ip_protocol = "tcp"
+      nic_type    = "intranet"
+      policy      = "accept"
+      port_range  = "80/80"
+      priority    = 1
+      cidr_ip     = var.vswitch_cidr_block
+    }
+  ]
 
   instance_config = {
-    image_id                   = data.alicloud_images.default.images[0].id
+    image_id                   = var.image_id
     instance_type              = var.instance_type
     system_disk_category       = var.system_disk_category
-    password                   = var.ecs_instance_password
-    instance_name              = var.ecs_instance_name
+    system_disk_size           = var.system_disk_size
     internet_max_bandwidth_out = var.internet_max_bandwidth_out
-  }
-
-  ram_user_config = {
-    name = "tf-ram-user-${random_string.suffix.result}"
-  }
-
-  arms_config = {
-    app_name    = var.arms_app_name
-    is_public   = var.arms_is_public
-    license_key = var.arms_license_key
+    password                   = var.ecs_instance_password
   }
 
   bailian_config = {
     api_key = var.bailian_api_key
   }
 
-  enable_ecs_invocation = var.enable_ecs_invocation
+  ecs_command_config = {
+    name        = "setup-bailian-app"
+    working_dir = "/root"
+    type        = "RunShellScript"
+    timeout     = 3600
+  }
+
+  ecs_invocation_config = {
+    create_timeout = "15m"
+  }
 }

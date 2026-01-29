@@ -1,110 +1,65 @@
-# ------------------------------------------------------------------------------
-# Variables for Complete Example
-#
-# This file defines variables used in the complete example of the
-# AI Application Observability System module.
-# ------------------------------------------------------------------------------
+variable "region" {
+  description = "The Alibaba Cloud region where resources will be created"
+  type        = string
+  default     = "cn-zhangjiakou"
+}
 
-
+variable "common_name_prefix" {
+  description = "Common name prefix for resources"
+  type        = string
+  default     = "BaiLian"
+}
 
 variable "vpc_cidr_block" {
-  description = "CIDR block for the VPC"
+  description = "The CIDR block for the VPC"
   type        = string
   default     = "192.168.0.0/16"
 }
 
-variable "vpc_name" {
-  description = "Name for the VPC"
-  type        = string
-  default     = null
-}
-
 variable "vswitch_cidr_block" {
-  description = "CIDR block for the VSwitch"
+  description = "The CIDR block for the VSwitch"
   type        = string
   default     = "192.168.0.0/24"
 }
 
-variable "vswitch_name" {
-  description = "Name for the VSwitch"
+variable "image_id" {
+  description = "The image ID for the ECS instance"
   type        = string
-  default     = null
-}
-
-variable "security_group_name" {
-  description = "Name for the security group"
-  type        = string
-  default     = null
-}
-
-variable "security_group_description" {
-  description = "Description for the security group"
-  type        = string
-  default     = "Security group for AI application observability system"
-}
-
-variable "allow_public_access" {
-  description = "Whether to allow public internet access to the application"
-  type        = bool
-  default     = false
+  default     = "aliyun_3_9_x64_20G_alibase_20231219.vhd"
 }
 
 variable "instance_type" {
-  description = "ECS instance type"
+  description = "The instance type for the ECS instance"
   type        = string
-  default     = "ecs.t6-c1m2.large"
+  default     = "ecs.e-c1m2.large"
 }
 
 variable "system_disk_category" {
-  description = "System disk category for ECS instance"
+  description = "The system disk category for the ECS instance"
   type        = string
   default     = "cloud_essd"
 }
 
-variable "ecs_instance_password" {
-  description = "Password for ECS instance login. Must be 8-30 characters and contain uppercase, lowercase, numbers, and special characters"
-  type        = string
-  sensitive   = true
-}
-
-variable "ecs_instance_name" {
-  description = "Name for the ECS instance"
-  type        = string
-  default     = null
+variable "system_disk_size" {
+  description = "The system disk size for the ECS instance (in GB)"
+  type        = number
+  default     = 40
 }
 
 variable "internet_max_bandwidth_out" {
-  description = "Maximum outbound internet bandwidth for ECS instance"
+  description = "The maximum outbound bandwidth for the ECS instance (in Mbps)"
   type        = number
   default     = 5
 }
 
-variable "arms_app_name" {
-  description = "ARMS application name for monitoring"
-  type        = string
-  default     = "llm_app"
-}
-
-variable "arms_is_public" {
-  description = "Whether ARMS monitoring is public"
-  type        = bool
-  default     = true
-}
-
-variable "arms_license_key" {
-  description = "ARMS license key for monitoring. Get from https://api.aliyun.com/api/ARMS/2019-08-08/DescribeTraceLicenseKey"
+variable "ecs_instance_password" {
+  description = "The password for the ECS instance login. Length must be 8-30 characters and contain uppercase letters, lowercase letters, numbers, and special characters."
   type        = string
   sensitive   = true
 }
 
 variable "bailian_api_key" {
-  description = "Bailian (DashScope) API key for AI model access. Get from https://help.aliyun.com/zh/model-studio/developer-reference/get-api-key"
+  description = "BaiLian API Key. You need to enable BaiLian model service first and then get the API Key. For more details: https://help.aliyun.com/zh/model-studio/developer-reference/get-api-key"
   type        = string
   sensitive   = true
-}
-
-variable "enable_ecs_invocation" {
-  description = "Whether to enable ECS command invocation for AI application deployment. Set to false for testing to avoid timeout"
-  type        = bool
-  default     = true
 }

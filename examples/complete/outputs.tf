@@ -1,52 +1,34 @@
-# ------------------------------------------------------------------------------
-# Outputs for Complete Example
-#
-# This file defines outputs for the complete example, exposing important
-# information from the deployed AI Application Observability System.
-# ------------------------------------------------------------------------------
-
 output "vpc_id" {
-  description = "The ID of the created VPC"
-  value       = module.ai_observability_system.vpc_id
+  description = "The ID of the VPC"
+  value       = module.bailian_app.vpc_id
 }
 
-output "instance_id" {
+output "vswitch_id" {
+  description = "The ID of the VSwitch"
+  value       = module.bailian_app.vswitch_id
+}
+
+output "security_group_id" {
+  description = "The ID of the Security Group"
+  value       = module.bailian_app.security_group_id
+}
+
+output "ecs_instance_id" {
   description = "The ID of the ECS instance"
-  value       = module.ai_observability_system.instance_id
+  value       = module.bailian_app.ecs_instance_id
 }
 
-output "instance_public_ip" {
+output "ecs_instance_public_ip" {
   description = "The public IP address of the ECS instance"
-  value       = module.ai_observability_system.instance_public_ip
+  value       = module.bailian_app.ecs_instance_public_ip
 }
 
-output "instance_private_ip" {
-  description = "The private IP address of the ECS instance"
-  value       = module.ai_observability_system.instance_private_ip
+output "web_url" {
+  description = "Web access URL for the BaiLian application"
+  value       = module.bailian_app.web_url
 }
 
 output "ecs_login_address" {
-  description = "ECS workbench login address for the deployed instance"
-  value       = module.ai_observability_system.ecs_login_address
-}
-
-output "application_access_info" {
-  description = "Information for accessing the deployed AI application"
-  value       = module.ai_observability_system.application_access_info
-}
-
-output "region" {
-  description = "The region where resources are deployed"
-  value       = module.ai_observability_system.region
-}
-
-
-output "security_group_id" {
-  description = "The ID of the security group"
-  value       = module.ai_observability_system.security_group_id
-}
-
-output "ram_user_name" {
-  description = "The name of the created RAM user"
-  value       = module.ai_observability_system.ram_user_name
+  description = "ECS login address through Alibaba Cloud console"
+  value       = module.bailian_app.ecs_login_address
 }
