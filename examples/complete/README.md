@@ -34,7 +34,7 @@ Before running this example, ensure you have:
 # Required variables
 ecs_password      = "YourSecurePassword123!"
 arms_license_key  = "your-arms-license-key"
-bai_lian_api_key  = "your-bailian-api-key"
+bailian_api_key  = "your-bailian-api-key"
 
 # Optional variables (customize as needed)
 allow_public_access      = true  # Set to true to allow public internet access

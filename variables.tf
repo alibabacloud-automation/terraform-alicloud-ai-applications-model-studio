@@ -68,8 +68,9 @@ variable "security_group_rule_config" {
 variable "ram_user_config" {
   description = "RAM user configuration for service access authorization"
   type = object({
-    name = string
+    name = optional(string, null)
   })
+  default = {}
 }
 
 variable "ram_policy_attachment_config" {
@@ -118,7 +119,7 @@ variable "arms_config" {
   sensitive = true
 }
 
-variable "bai_lian_config" {
+variable "bailian_config" {
   description = "Bailian (DashScope) API configuration"
   type = object({
     api_key = string

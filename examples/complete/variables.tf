@@ -97,7 +97,7 @@ variable "arms_license_key" {
   sensitive   = true
 }
 
-variable "bai_lian_api_key" {
+variable "bailian_api_key" {
   description = "Bailian (DashScope) API key for AI model access. Get from https://help.aliyun.com/zh/model-studio/developer-reference/get-api-key"
   type        = string
   sensitive   = true
