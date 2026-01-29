@@ -1,4 +1,4 @@
-Alibaba Cloud AI Application Terraform Module
+Alibaba Cloud AI Applications Terraform Module Based on Model Studio
 
 ================================================ 
 
@@ -6,47 +6,67 @@ Alibaba Cloud AI Application Terraform Module
 
 English | [简体中文](https://github.com/alibabacloud-automation/terraform-alicloud-ai-applications-model-studio/blob/main/README-CN.md)
 
-Terraform module which creates AI application infrastructure on Alibaba Cloud Model Studio. This module provisions the necessary cloud resources including VPC, ECS instance, security groups, and automated setup scripts to build AI agents and workflow applications efficiently using BaiLian API.
+This Terraform module is used to implement the solution [Efficiently build AI agents and workflow applications](https://www.aliyun.com/solution/tech-solution/build-ai-applications-based-on-alibaba-cloud-model-studio), which involves the creation and deployment of resources such as Virtual Private Cloud (VPC), VSwitch, Elastic Compute Service (ECS), and automated setup of AI applications using Alibaba Cloud Model Studio. This module provides a complete infrastructure foundation for building and deploying AI-powered applications with automated configuration and deployment scripts.
 
 ## Usage
 
-This module helps you build AI applications based on Alibaba Cloud Model Studio quickly and efficiently. You need to provide a BaiLian API key to access the model services. The module creates a complete infrastructure stack including networking, compute resources, and security configurations.
+This module sets up a complete environment for AI applications based on Alibaba Cloud Model Studio, including VPC network infrastructure, ECS instances, and automated application deployment.
 
 ```terraform
-data "alicloud_zones" "default" {
-  available_resource_creation = "VSwitch"
-}
-
-data "alicloud_images" "default" {
-  name_regex  = "^aliyun_3_9_x64_20G_alibase_*"
-  most_recent = true
-  owners      = "system"
+provider "alicloud" {
+  region = "cn-hangzhou"
 }
 
 module "ai_application" {
   source = "alibabacloud-automation/ai-applications-model-studio/alicloud"
-  
-  common_name      = "MyAIApp"
-  bailian_api_key = var.bailian_api_key
 
   vpc_config = {
-    cidr_block = "192.168.0.0/16"
-    vpc_name   = "ai-app-vpc"
+    cidr_block = "10.0.0.0/8"
+    vpc_name   = "MyAIVPC"
   }
 
   vswitch_config = {
-    cidr_block   = "192.168.0.0/24"
-    zone_id      = data.alicloud_zones.default.zones[0].id
-    vswitch_name = "ai-app-vswitch"
+    cidr_block = "10.1.0.0/16"
+    zone_id    = "cn-hangzhou-h"
+    vswitch_name = "MyAIVSwitch"
+  }
+
+  security_group_config = {
+    security_group_name = "MyAISecurityGroup"
+  }
+
+  security_group_rule_config = {
+    type        = "ingress"
+    ip_protocol = "tcp"
+    nic_type    = "intranet"
+    policy      = "accept"
+    port_range  = "80/80"
+    priority    = 1
+    cidr_ip     = "0.0.0.0/0"
   }
 
   instance_config = {
-    image_id                   = data.alicloud_images.default.images[0].id
-    instance_type              = "ecs.e-c1m2.large"
-    system_disk_category       = "cloud_essd"
+    image_id                   = "centos_8_4_x64_20G_alibase_20230228.vhd"
+    instance_type              = "ecs.c6.large"
+    system_disk_category       = "cloud_efficiency"
     system_disk_size           = 40
-    internet_max_bandwidth_out = 5
-    password                   = var.ecs_password
+    internet_max_bandwidth_out = 100
+    password                   = "YourSecurePassword123!"
+  }
+
+  bailian_config = {
+    api_key = "your-bailian-api-key"
+  }
+
+  ecs_command_config = {
+    name        = "setup-bailian-app"
+    working_dir = "/root"
+    type        = "RunShellScript"
+    timeout     = 3600
+  }
+
+  ecs_invocation_config = {
+    create_timeout = "15m"
   }
 }
 ```
@@ -61,14 +81,13 @@ module "ai_application" {
 | Name | Version |
 |------|---------|
 | <a name="requirement_terraform"></a> [terraform](#requirement\_terraform) | >= 1.0 |
-| <a name="requirement_alicloud"></a> [alicloud](#requirement\_alicloud) | >= 1.210.0 |
-| <a name="requirement_random"></a> [random](#requirement\_random) | >= 3.1 |
+| <a name="requirement_alicloud"></a> [alicloud](#requirement\_alicloud) | >= 1.220.0 |
 
 ## Providers
 
 | Name | Version |
 |------|---------|
-| <a name="provider_alicloud"></a> [alicloud](#provider\_alicloud) | >= 1.210.0 |
+| <a name="provider_alicloud"></a> [alicloud](#provider\_alicloud) | 1.269.0 |
 
 ## Modules
 
@@ -78,14 +97,11 @@ No modules.
 
 | Name | Type |
 |------|------|
-| [alicloud_ecs_command.run_command](https://registry.terraform.io/providers/aliyun/alicloud/latest/docs/resources/ecs_command) | resource |
-| [alicloud_ecs_invocation.invoke_script](https://registry.terraform.io/providers/aliyun/alicloud/latest/docs/resources/ecs_invocation) | resource |
+| [alicloud_ecs_command.run_script](https://registry.terraform.io/providers/aliyun/alicloud/latest/docs/resources/ecs_command) | resource |
+| [alicloud_ecs_invocation.run_command](https://registry.terraform.io/providers/aliyun/alicloud/latest/docs/resources/ecs_invocation) | resource |
 | [alicloud_instance.ecs_instance](https://registry.terraform.io/providers/aliyun/alicloud/latest/docs/resources/instance) | resource |
-| [alicloud_ram_access_key.ram_access_key](https://registry.terraform.io/providers/aliyun/alicloud/latest/docs/resources/ram_access_key) | resource |
-| [alicloud_ram_user.ram_user](https://registry.terraform.io/providers/aliyun/alicloud/latest/docs/resources/ram_user) | resource |
-| [alicloud_ram_user_policy_attachment.attach_policy_to_user](https://registry.terraform.io/providers/aliyun/alicloud/latest/docs/resources/ram_user_policy_attachment) | resource |
 | [alicloud_security_group.security_group](https://registry.terraform.io/providers/aliyun/alicloud/latest/docs/resources/security_group) | resource |
-| [alicloud_security_group_rule.allow_app_port](https://registry.terraform.io/providers/aliyun/alicloud/latest/docs/resources/security_group_rule) | resource |
+| [alicloud_security_group_rule.default](https://registry.terraform.io/providers/aliyun/alicloud/latest/docs/resources/security_group_rule) | resource |
 | [alicloud_vpc.vpc](https://registry.terraform.io/providers/aliyun/alicloud/latest/docs/resources/vpc) | resource |
 | [alicloud_vswitch.vswitch](https://registry.terraform.io/providers/aliyun/alicloud/latest/docs/resources/vswitch) | resource |
 | [alicloud_regions.current](https://registry.terraform.io/providers/aliyun/alicloud/latest/docs/data-sources/regions) | data source |
@@ -94,39 +110,33 @@ No modules.
 
 | Name | Description | Type | Default | Required |
 |------|-------------|------|---------|:--------:|
-| <a name="input_arms_config"></a> [arms\_config](#input\_arms\_config) | ARMS (Application Real-Time Monitoring Service) configuration | <pre>object({<br>    app_name    = string<br>    is_public   = bool<br>    license_key = string<br>  })</pre> | <pre>{<br>  "app_name": "llm_app",<br>  "is_public": true,<br>  "license_key": null<br>}</pre> | no |
-| <a name="input_bailian_config"></a> [bailian\_config](#input\_bailian\_config) | Bailian (DashScope) API configuration | <pre>object({<br>    api_key = string<br>  })</pre> | <pre>{<br>  "api_key": null<br>}</pre> | no |
-| <a name="input_custom_deployment_script"></a> [custom\_deployment\_script](#input\_custom\_deployment\_script) | Custom deployment script for AI application. If not provided, the default script will be used | `string` | `null` | no |
-| <a name="input_ecs_command_config"></a> [ecs\_command\_config](#input\_ecs\_command\_config) | ECS command configuration for deploying AI application | <pre>object({<br>    name        = optional(string, "DeployAIAppCommand")<br>    working_dir = string<br>    type        = string<br>    timeout     = number<br>  })</pre> | <pre>{<br>  "timeout": 3600,<br>  "type": "RunShellScript",<br>  "working_dir": "/root"<br>}</pre> | no |
-| <a name="input_ecs_invocation_config"></a> [ecs\_invocation\_config](#input\_ecs\_invocation\_config) | ECS invocation configuration | <pre>object({<br>    create_timeout = string<br>  })</pre> | <pre>{<br>  "create_timeout": "5m"<br>}</pre> | no |
-| <a name="input_enable_ecs_invocation"></a> [enable\_ecs\_invocation](#input\_enable\_ecs\_invocation) | Whether to enable ECS command invocation for AI application deployment. Set to false to skip the deployment step | `bool` | `true` | no |
-| <a name="input_instance_config"></a> [instance\_config](#input\_instance\_config) | ECS instance configuration. The 'image\_id', 'instance\_type', 'system\_disk\_category', and 'password' attributes are required | <pre>object({<br>    image_id                   = string<br>    instance_type              = string<br>    system_disk_category       = string<br>    password                   = string<br>    instance_name              = optional(string, null)<br>    internet_max_bandwidth_out = optional(number, 5)<br>  })</pre> | <pre>{<br>  "image_id": null,<br>  "instance_type": "ecs.t6-c1m2.large",<br>  "password": null,<br>  "system_disk_category": "cloud_essd"<br>}</pre> | no |
-| <a name="input_ram_policy_attachment_config"></a> [ram\_policy\_attachment\_config](#input\_ram\_policy\_attachment\_config) | RAM policy attachment configuration | <pre>object({<br>    policy_type = string<br>    policy_name = string<br>  })</pre> | <pre>{<br>  "policy_name": "AliyunLogFullAccess",<br>  "policy_type": "System"<br>}</pre> | no |
-| <a name="input_ram_user_config"></a> [ram\_user\_config](#input\_ram\_user\_config) | RAM user configuration for service access authorization | <pre>object({<br>    name = optional(string, null)<br>  })</pre> | `{}` | no |
-| <a name="input_security_group_config"></a> [security\_group\_config](#input\_security\_group\_config) | Security group configuration | <pre>object({<br>    security_group_name = optional(string, null)<br>    description         = optional(string, "Security group for AI application observability system")<br>  })</pre> | <pre>{<br>  "description": "Security group for AI application observability system"<br>}</pre> | no |
-| <a name="input_security_group_rule_config"></a> [security\_group\_rule\_config](#input\_security\_group\_rule\_config) | Security group rule configuration for allowing access to application port | <pre>object({<br>    type        = string<br>    ip_protocol = string<br>    nic_type    = string<br>    policy      = string<br>    port_range  = string<br>    priority    = number<br>    cidr_ip     = string<br>  })</pre> | <pre>{<br>  "cidr_ip": "192.168.0.0/24",<br>  "ip_protocol": "tcp",<br>  "nic_type": "intranet",<br>  "policy": "accept",<br>  "port_range": "8000/8000",<br>  "priority": 1,<br>  "type": "ingress"<br>}</pre> | no |
-| <a name="input_vpc_config"></a> [vpc\_config](#input\_vpc\_config) | VPC configuration. The 'cidr\_block' attribute is required | <pre>object({<br>    cidr_block = string<br>    vpc_name   = optional(string, null)<br>  })</pre> | <pre>{<br>  "cidr_block": "192.168.0.0/16"<br>}</pre> | no |
-| <a name="input_vswitch_config"></a> [vswitch\_config](#input\_vswitch\_config) | VSwitch configuration. The 'cidr\_block' and 'zone\_id' attributes are required | <pre>object({<br>    cidr_block   = string<br>    zone_id      = string<br>    vswitch_name = optional(string, null)<br>  })</pre> | <pre>{<br>  "cidr_block": "192.168.0.0/24",<br>  "zone_id": null<br>}</pre> | no |
+| <a name="input_bailian_config"></a> [bailian\_config](#input\_bailian\_config) | The parameters for BaiLian API configuration. The attribute 'api\_key' is required. | <pre>object({<br>    api_key = string<br>  })</pre> | <pre>{<br>  "api_key": null<br>}</pre> | no |
+| <a name="input_custom_bailian_setup_script"></a> [custom\_bailian\_setup\_script](#input\_custom\_bailian\_setup\_script) | Custom BaiLian setup script (base64 encoded). If not provided, the default script will be used. | `string` | `null` | no |
+| <a name="input_ecs_command_config"></a> [ecs\_command\_config](#input\_ecs\_command\_config) | The parameters of ECS command for BaiLian setup. | <pre>object({<br>    name        = optional(string, "setup-bailian-app")<br>    working_dir = optional(string, "/root")<br>    type        = optional(string, "RunShellScript")<br>    timeout     = optional(number, 3600)<br>  })</pre> | `{}` | no |
+| <a name="input_ecs_invocation_config"></a> [ecs\_invocation\_config](#input\_ecs\_invocation\_config) | The parameters of ECS command invocation. | <pre>object({<br>    create_timeout = optional(string, "15m")<br>  })</pre> | `{}` | no |
+| <a name="input_instance_config"></a> [instance\_config](#input\_instance\_config) | The parameters of ECS instance. The attributes 'image\_id', 'instance\_type', 'system\_disk\_category', 'system\_disk\_size' and 'password' are required. | <pre>object({<br>    image_id                   = string<br>    instance_type              = string<br>    system_disk_category       = string<br>    system_disk_size           = number<br>    internet_max_bandwidth_out = optional(number, 0)<br>    password                   = string<br>  })</pre> | n/a | yes |
+| <a name="input_security_group_config"></a> [security\_group\_config](#input\_security\_group\_config) | The parameters of Security Group. | <pre>object({<br>    security_group_name = optional(string, "BaiLian-SecurityGroup_1")<br>  })</pre> | `{}` | no |
+| <a name="input_security_group_rule_config"></a> [security\_group\_rule\_config](#input\_security\_group\_rule\_config) | The parameters of Security Group Rules for HTTP access. A list of objects defining security group rules. | <pre>list(object({<br>    type        = optional(string, "ingress")<br>    ip_protocol = optional(string, "tcp")<br>    nic_type    = optional(string, "intranet")<br>    policy      = optional(string, "accept")<br>    port_range  = optional(string, "80/80")<br>    priority    = optional(number, 1)<br>    cidr_ip     = optional(string, "0.0.0.0/0")<br>  }))</pre> | `[]` | no |
+| <a name="input_vpc_config"></a> [vpc\_config](#input\_vpc\_config) | The parameters of VPC. The attribute 'cidr\_block' is required. | <pre>object({<br>    cidr_block = string<br>    vpc_name   = optional(string, "BaiLian-VPC")<br>  })</pre> | n/a | yes |
+| <a name="input_vswitch_config"></a> [vswitch\_config](#input\_vswitch\_config) | The parameters of VSwitch. The attributes 'cidr\_block' and 'zone\_id' are required. | <pre>object({<br>    cidr_block   = string<br>    zone_id      = string<br>    vswitch_name = optional(string, "BaiLian-vsw_001")<br>  })</pre> | n/a | yes |
 
 ## Outputs
 
 | Name | Description |
 |------|-------------|
-| <a name="output_application_access_info"></a> [application\_access\_info](#output\_application\_access\_info) | Information for accessing the deployed AI application |
-| <a name="output_ecs_command_id"></a> [ecs\_command\_id](#output\_ecs\_command\_id) | The ID of the ECS command for AI application deployment |
+| <a name="output_ecs_command_id"></a> [ecs\_command\_id](#output\_ecs\_command\_id) | The ID of the ECS command for BaiLian setup |
+| <a name="output_ecs_instance_id"></a> [ecs\_instance\_id](#output\_ecs\_instance\_id) | The ID of the ECS instance |
+| <a name="output_ecs_instance_private_ip"></a> [ecs\_instance\_private\_ip](#output\_ecs\_instance\_private\_ip) | The private IP address of the ECS instance |
+| <a name="output_ecs_instance_public_ip"></a> [ecs\_instance\_public\_ip](#output\_ecs\_instance\_public\_ip) | The public IP address of the ECS instance |
 | <a name="output_ecs_invocation_id"></a> [ecs\_invocation\_id](#output\_ecs\_invocation\_id) | The ID of the ECS command invocation |
-| <a name="output_ecs_login_address"></a> [ecs\_login\_address](#output\_ecs\_login\_address) | The ECS workbench login address for the deployed instance |
-| <a name="output_instance_id"></a> [instance\_id](#output\_instance\_id) | The ID of the ECS instance |
-| <a name="output_instance_private_ip"></a> [instance\_private\_ip](#output\_instance\_private\_ip) | The private IP address of the ECS instance |
-| <a name="output_instance_public_ip"></a> [instance\_public\_ip](#output\_instance\_public\_ip) | The public IP address of the ECS instance |
-| <a name="output_ram_access_key_id"></a> [ram\_access\_key\_id](#output\_ram\_access\_key\_id) | The access key ID of the RAM user |
-| <a name="output_ram_access_key_secret"></a> [ram\_access\_key\_secret](#output\_ram\_access\_key\_secret) | The access key secret of the RAM user |
-| <a name="output_ram_user_name"></a> [ram\_user\_name](#output\_ram\_user\_name) | The name of the RAM user |
-| <a name="output_region"></a> [region](#output\_region) | The region where resources are deployed |
-| <a name="output_security_group_id"></a> [security\_group\_id](#output\_security\_group\_id) | The ID of the security group |
-| <a name="output_vpc_cidr_block"></a> [vpc\_cidr\_block](#output\_vpc\_cidr\_block) | The CIDR block of the VPC |
+| <a name="output_ecs_login_address"></a> [ecs\_login\_address](#output\_ecs\_login\_address) | ECS login address through Alibaba Cloud console |
+| <a name="output_security_group_id"></a> [security\_group\_id](#output\_security\_group\_id) | The ID of the Security Group |
+| <a name="output_security_group_name"></a> [security\_group\_name](#output\_security\_group\_name) | The name of the Security Group |
 | <a name="output_vpc_id"></a> [vpc\_id](#output\_vpc\_id) | The ID of the VPC |
+| <a name="output_vpc_name"></a> [vpc\_name](#output\_vpc\_name) | The name of the VPC |
 | <a name="output_vswitch_id"></a> [vswitch\_id](#output\_vswitch\_id) | The ID of the VSwitch |
+| <a name="output_vswitch_name"></a> [vswitch\_name](#output\_vswitch\_name) | The name of the VSwitch |
+| <a name="output_web_url"></a> [web\_url](#output\_web\_url) | Web access URL for the BaiLian application |
 <!-- END_TF_DOCS -->
 
 ## Submit Issues
