@@ -87,7 +87,7 @@ module "ai_application" {
 
 | Name | Version |
 |------|---------|
-| <a name="provider_alicloud"></a> [alicloud](#provider\_alicloud) | 1.269.0 |
+| <a name="provider_alicloud"></a> [alicloud](#provider\_alicloud) | >= 1.220.0 |
 
 ## Modules
 
