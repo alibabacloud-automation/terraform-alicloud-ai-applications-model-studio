@@ -83,8 +83,8 @@ module "ai_observability_system" {
     license_key = var.arms_license_key
   }
 
-  bai_lian_config = {
-    api_key = var.bai_lian_api_key
+  bailian_config = {
+    api_key = var.bailian_api_key
   }
 
   enable_ecs_invocation = var.enable_ecs_invocation

@@ -1,96 +1,59 @@
-# Alicloud AI Application Observability System Terraform Module
+Alibaba Cloud AI Application Terraform Module
 
 ================================================ 
 
-terraform-alicloud-ai-observability-system
+# terraform-alicloud-ai-applications-model-studio
 
-English | [简体中文](https://github.com/terraform-alicloud-modules/terraform-alicloud-ai-observability-system/blob/master/README-CN.md)
+English | [简体中文](https://github.com/alibabacloud-automation/terraform-alicloud-ai-applications-model-studio/blob/main/README-CN.md)
 
-## Description
-
-Terraform module which creates an observability system for AI applications at low cost using ARMS monitoring on Alibaba Cloud. This module provides a complete infrastructure solution for deploying and monitoring AI applications with real-time observability capabilities.
-
-This module automatically provisions:
-- VPC network infrastructure with secure isolation
-- ECS instances optimized for AI application hosting
-- RAM users with appropriate permissions for service authorization
-- ARMS monitoring integration for comprehensive observability
-- Security groups with configurable access rules
-- Automated AI application deployment with monitoring capabilities (optional)
+Terraform module which creates AI application infrastructure on Alibaba Cloud Model Studio. This module provisions the necessary cloud resources including VPC, ECS instance, security groups, and automated setup scripts to build AI agents and workflow applications efficiently using BaiLian API.
 
 ## Usage
 
-This module creates a complete AI application observability system including VPC network infrastructure, ECS instances for hosting AI applications, RAM users for service authorization, and ARMS monitoring integration. The module automatically deploys and configures an AI application with monitoring capabilities.
+This module helps you build AI applications based on Alibaba Cloud Model Studio quickly and efficiently. You need to provide a BaiLian API key to access the model services. The module creates a complete infrastructure stack including networking, compute resources, and security configurations.
 
 ```terraform
 data "alicloud_zones" "default" {
-  available_disk_category     = "cloud_essd"
   available_resource_creation = "VSwitch"
-  available_instance_type     = "ecs.t6-c1m2.large"
 }
 
 data "alicloud_images" "default" {
-  name_regex  = "^ubuntu_24_04_x64_20G_alibase_.*"
+  name_regex  = "^aliyun_3_9_x64_20G_alibase_*"
   most_recent = true
   owners      = "system"
 }
 
-module "ai_observability_system" {
-  source = "alibabacloud-automation/ai-observability-system/alicloud"
-
+module "ai_application" {
+  source = "alibabacloud-automation/ai-applications-model-studio/alicloud"
+  
+  common_name      = "MyAIApp"
+  bailian_api_key = var.bailian_api_key
 
   vpc_config = {
     cidr_block = "192.168.0.0/16"
+    vpc_name   = "ai-app-vpc"
   }
 
   vswitch_config = {
-    cidr_block = "192.168.0.0/24"
-    zone_id    = data.alicloud_zones.default.zones[0].id
+    cidr_block   = "192.168.0.0/24"
+    zone_id      = data.alicloud_zones.default.zones[0].id
+    vswitch_name = "ai-app-vswitch"
   }
 
   instance_config = {
-    image_id             = data.alicloud_images.default.images[0].id
-    instance_type        = "ecs.t6-c1m2.large"
-    system_disk_category = "cloud_essd"
-    password             = "YourSecurePassword123!"
+    image_id                   = data.alicloud_images.default.images[0].id
+    instance_type              = "ecs.e-c1m2.large"
+    system_disk_category       = "cloud_essd"
+    system_disk_size           = 40
+    internet_max_bandwidth_out = 5
+    password                   = var.ecs_password
   }
-
-  arms_config = {
-    app_name     = "llm_app"
-    is_public    = true
-    license_key  = "your-arms-license-key"
-  }
-
-  bai_lian_config = {
-    api_key = "your-bailian-api-key"
-  }
-
-  # Optional: Enable automatic deployment (may take time)
-  enable_ecs_invocation = true
 }
 ```
 
 ## Examples
 
-* [Complete Example](https://github.com/alibabacloud-automation/terraform-alicloud-ai-observability-system/tree/main/examples/complete)
-
-## Requirements
-
-| Name | Version |
-|------|---------|
-| <a name="requirement_terraform"></a> [terraform](#requirement\_terraform) | >= 1.0 |
-| <a name="requirement_alicloud"></a> [alicloud](#requirement\_alicloud) | >= 1.210.0 |
-| <a name="requirement_random"></a> [random](#requirement\_random) | >= 3.1 |
-
-## Prerequisites
-
-Before using this module, ensure you have:
-
-1. **Alibaba Cloud Account**: With sufficient permissions to create VPC, ECS, RAM, and ARMS resources
-2. **ARMS License Key**: Obtain from [DescribeTraceLicenseKey API](https://api.aliyun.com/api/ARMS/2019-08-08/DescribeTraceLicenseKey)
-3. **Bailian API Key**: Obtain from [Model Studio](https://help.aliyun.com/zh/model-studio/developer-reference/get-api-key)
-4. **Terraform**: Version >= 1.0
-5. **Alibaba Cloud Provider**: Version >= 1.210.0
+* [Complete Example](https://github.com/alibabacloud-automation/terraform-alicloud-ai-applications-model-studio/tree/main/examples/complete)
 
 <!-- BEGIN_TF_DOCS -->
 ## Requirements
@@ -132,9 +95,9 @@ No modules.
 | Name | Description | Type | Default | Required |
 |------|-------------|------|---------|:--------:|
 | <a name="input_arms_config"></a> [arms\_config](#input\_arms\_config) | ARMS (Application Real-Time Monitoring Service) configuration | <pre>object({<br>    app_name    = string<br>    is_public   = bool<br>    license_key = string<br>  })</pre> | <pre>{<br>  "app_name": "llm_app",<br>  "is_public": true,<br>  "license_key": null<br>}</pre> | no |
-| <a name="input_bai_lian_config"></a> [bai\_lian\_config](#input\_bai\_lian\_config) | Bailian (DashScope) API configuration | <pre>object({<br>    api_key = string<br>  })</pre> | <pre>{<br>  "api_key": null<br>}</pre> | no |
+| <a name="input_bailian_config"></a> [bailian\_config](#input\_bailian\_config) | Bailian (DashScope) API configuration | <pre>object({<br>    api_key = string<br>  })</pre> | <pre>{<br>  "api_key": null<br>}</pre> | no |
 | <a name="input_custom_deployment_script"></a> [custom\_deployment\_script](#input\_custom\_deployment\_script) | Custom deployment script for AI application. If not provided, the default script will be used | `string` | `null` | no |
-| <a name="input_ecs_command_config"></a> [ecs\_command\_config](#input\_ecs\_command\_config) | ECS command configuration for deploying AI application | <pre>object({<br>    name        = optional(string, null)<br>    working_dir = string<br>    type        = string<br>    timeout     = number<br>  })</pre> | <pre>{<br>  "timeout": 3600,<br>  "type": "RunShellScript",<br>  "working_dir": "/root"<br>}</pre> | no |
+| <a name="input_ecs_command_config"></a> [ecs\_command\_config](#input\_ecs\_command\_config) | ECS command configuration for deploying AI application | <pre>object({<br>    name        = optional(string, "DeployAIAppCommand")<br>    working_dir = string<br>    type        = string<br>    timeout     = number<br>  })</pre> | <pre>{<br>  "timeout": 3600,<br>  "type": "RunShellScript",<br>  "working_dir": "/root"<br>}</pre> | no |
 | <a name="input_ecs_invocation_config"></a> [ecs\_invocation\_config](#input\_ecs\_invocation\_config) | ECS invocation configuration | <pre>object({<br>    create_timeout = string<br>  })</pre> | <pre>{<br>  "create_timeout": "5m"<br>}</pre> | no |
 | <a name="input_enable_ecs_invocation"></a> [enable\_ecs\_invocation](#input\_enable\_ecs\_invocation) | Whether to enable ECS command invocation for AI application deployment. Set to false to skip the deployment step | `bool` | `true` | no |
 | <a name="input_instance_config"></a> [instance\_config](#input\_instance\_config) | ECS instance configuration. The 'image\_id', 'instance\_type', 'system\_disk\_category', and 'password' attributes are required | <pre>object({<br>    image_id                   = string<br>    instance_type              = string<br>    system_disk_category       = string<br>    password                   = string<br>    instance_name              = optional(string, null)<br>    internet_max_bandwidth_out = optional(number, 5)<br>  })</pre> | <pre>{<br>  "image_id": null,<br>  "instance_type": "ecs.t6-c1m2.large",<br>  "password": null,<br>  "system_disk_category": "cloud_essd"<br>}</pre> | no |

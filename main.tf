@@ -19,7 +19,7 @@ locals {
     export ARMS_REGION_ID=${data.alicloud_regions.current.regions[0].id}
     export ARMS_IS_PUBLIC=${var.arms_config.is_public}
     export ARMS_LICENSE_KEY=${var.arms_config.license_key}
-    export DASHSCOPE_API_KEY=${var.bai_lian_config.api_key}
+    export DASHSCOPE_API_KEY=${var.bailian_config.api_key}
 
     curl -fsSL https://help-static-aliyun-doc.aliyuncs.com/install-script/ai-observable/install.sh | bash
   EOF
