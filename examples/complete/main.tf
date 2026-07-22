@@ -4,7 +4,16 @@ provider "alicloud" {
 
 # Get available zones
 data "alicloud_zones" "available" {
-  available_instance_type = var.instance_type
+  available_disk_category     = var.system_disk_category
+  available_resource_creation = "VSwitch"
+}
+
+# Select a currently available instance type in the chosen zone.
+data "alicloud_instance_types" "available" {
+  availability_zone = data.alicloud_zones.available.zones[0].id
+  cpu_core_count    = 2
+  memory_size       = 4
+  sorted_by         = "Price"
 }
 
 # Call the module
@@ -40,7 +49,7 @@ module "bailian_app" {
 
   instance_config = {
     image_id                   = var.image_id
-    instance_type              = var.instance_type
+    instance_type              = data.alicloud_instance_types.available.instance_types[0].id
     system_disk_category       = var.system_disk_category
     system_disk_size           = var.system_disk_size
     internet_max_bandwidth_out = var.internet_max_bandwidth_out
