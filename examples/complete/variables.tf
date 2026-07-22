@@ -28,16 +28,10 @@ variable "image_id" {
   default     = "aliyun_3_9_x64_20G_alibase_20231219.vhd"
 }
 
-variable "instance_type" {
-  description = "The instance type for the ECS instance"
-  type        = string
-  default     = "ecs.e-c1m2.large"
-}
-
 variable "system_disk_category" {
   description = "The system disk category for the ECS instance"
   type        = string
-  default     = "cloud_essd"
+  default     = "cloud_efficiency"
 }
 
 variable "system_disk_size" {
